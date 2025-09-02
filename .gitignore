@@ -1,0 +1,13 @@
+# Ignorer fichiers spécifiques
+*.log
+*.env
+
+# Ignorer les environnements virtuels
+env/
+venv/
+back/env/
+back/venv/
+
+
+# Ignorer fichiers Python inutiles
+__pycache__/
