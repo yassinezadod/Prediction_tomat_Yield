@@ -1,0 +1,26 @@
+import { useState } from "react";
+import PageBreadcrumb from "../../components/common/PageBreadCrumb";
+import DropzoneCSVComponent from "../../components/form/form-elements/DropZoneCSV";
+import PageMeta from "../../components/common/PageMeta";
+import BasicTableOne from "../../components/tables/BasicTables/BasicTableOne";
+
+export default function PredictionPage() {
+  const [csvData, setCsvData] = useState<any[]>([]);
+
+  return (
+    <div>
+      <PageMeta
+        title="React.js Form Elements Dashboard | TailAdmin"
+        description="This is React.js Form Elements Dashboard page"
+      />
+      <PageBreadcrumb pageTitle="Yield Prediction" />
+
+      <div className="space-y-5 sm:space-y-6">
+        <DropzoneCSVComponent onDataParsed={setCsvData} />
+
+        {/*  Affiche la table seulement si fichier chargé */}
+        {csvData.length > 0 && <BasicTableOne data={csvData} />}
+      </div>
+    </div>
+  );
+}
