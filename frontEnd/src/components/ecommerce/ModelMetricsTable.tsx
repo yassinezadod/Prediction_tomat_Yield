@@ -7,58 +7,37 @@ import {
   TableRow,
 } from "../ui/table";
 import { predictionService } from '../../services/predictionService';
-
+// Composant ModelMetricsTable optimisé
 interface Metric {
   name: string;
   value: number;
 }
 
-export default function ModelMetricsTable({
-  predictionsFile,
-  actualFile,
-}: {
-  predictionsFile: File;
-  actualFile: File;
-}) {
+interface ModelMetricsTableProps {
+  data: any; // Les données JSON de l'API
+  loading: boolean;
+  error: string | null;
+}
+
+export default function ModelMetricsTable({ 
+  data, 
+  loading, 
+  error 
+}: ModelMetricsTableProps) {
   const [metrics, setMetrics] = useState<Metric[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-const fetchMetrics = async () => {
-  try {
-    setLoading(true);
-    setError(null);
 
-    const data = await predictionService.compareCSVsAsJSON(
-      predictionsFile,
-      actualFile
-    );
-
-    if (!data || !data.global_metrics) {
-      throw new Error("Réponse invalide du serveur (global_metrics manquant)");
-    }
-
-    const parsed: Metric[] = Object.entries(data.global_metrics).map(
-      ([key, value]) => ({
-        name: key,
-        value: Number(value),
-      })
-    );
-
-    setMetrics(parsed);
-  } catch (err: any) {
-    console.error("❌ Erreur lors de la récupération des métriques:", err);
-    setError(err.message || "Erreur inconnue");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+  // ✅ Plus besoin d'appel API - on utilise les données passées en props
   useEffect(() => {
-    if (predictionsFile && actualFile) {
-      fetchMetrics();
+    if (data && data.global_metrics) {
+      const parsed: Metric[] = Object.entries(data.global_metrics).map(
+        ([key, value]) => ({
+          name: key,
+          value: Number(value),
+        })
+      );
+      setMetrics(parsed);
     }
-  }, [predictionsFile, actualFile]);
+  }, [data]);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
@@ -101,6 +80,10 @@ const fetchMetrics = async () => {
             </TableBody>
           </Table>
         </div>
+      )}
+
+      {!loading && !error && metrics.length === 0 && data && (
+        <p className="text-gray-500">Aucune métrique disponible</p>
       )}
     </div>
   );

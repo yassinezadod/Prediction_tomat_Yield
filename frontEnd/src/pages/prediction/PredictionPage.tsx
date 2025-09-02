@@ -4,6 +4,7 @@ import DropzoneCSVComponent from "../../components/form/form-elements/DropZoneCS
 import PageMeta from "../../components/common/PageMeta";
 import BasicTableCsv from "../../components/tables/BasicTables/BasicTableCsv";
 import { predictionService } from "../../services/predictionService";
+import ModelPredictionChart from "./ModelPredictionChart";
 
 export default function PredictionPage() {
   const [csvData, setCsvData] = useState<any[]>([]);
@@ -35,6 +36,13 @@ export default function PredictionPage() {
         {loading && (
           <div className="text-blue-500 font-semibold">Analyse en cours...</div>
         )}
+
+         {/* Chart */}
+              {csvData.length > 0 && (
+                <div className="col-span-12 mt-6">
+                  <ModelPredictionChart csvData={csvData} />
+                </div>
+              )}
 
         {/* ✅ Table uniquement si backend a renvoyé des données */}
         {csvData.length > 0 && <BasicTableCsv data={csvData} columns={["Semaine", "Jour apres plantation", "Prediction_Rendement"]} // On choisit seulement ces colonnes

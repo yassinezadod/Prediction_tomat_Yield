@@ -134,6 +134,7 @@ export default function App() {
                           <Route path="/compare-predict" element={<PredictionPageComparaison />} />
 
              <Route path="/see-all" element={<SeeAllPage />} />
+             
              <Route path="/see-compare-all" element={<SeeCompareAllPage />} />
 
             <Route 

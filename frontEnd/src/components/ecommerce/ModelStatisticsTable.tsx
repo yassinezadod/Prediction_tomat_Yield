@@ -1,62 +1,41 @@
 import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../ui/table";
 import { predictionService } from "../../services/predictionService";
-
+// Composant ModelStatisticsTable optimisé
 interface Statistic {
   name: string;
   prediction: number;
   actual: number;
 }
 
-export default function ModelStatisticsTable({
-  predictionsFile,
-  actualFile,
-}: {
-  predictionsFile: File;
-  actualFile: File;
-}) {
+interface ModelStatisticsTableProps {
+  data: any; // Les données JSON de l'API
+  loading: boolean;
+  error: string | null;
+}
+
+export default function ModelStatisticsTable({ 
+  data, 
+  loading, 
+  error 
+}: ModelStatisticsTableProps) {
   const [statistics, setStatistics] = useState<Statistic[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchStatistics = async () => {
-  try {
-    setLoading(true);
-    setError(null);
-
-    const data = await predictionService.compareCSVsAsJSON(
-      predictionsFile,
-      actualFile
-    );
-
-    if (!data || !data.statistics) {
-      throw new Error("Réponse invalide du serveur (statistics manquant)");
-    }
-
-    const { predictions, actual } = data.statistics;
-
-    // On prend les clés communes (mean, std, min, max, etc.)
-    const parsed: Statistic[] = Object.keys(predictions).map((key) => ({
-      name: key,
-      prediction: Number(predictions[key]),
-      actual: Number(actual[key]),
-    }));
-
-    setStatistics(parsed);
-  } catch (err: any) {
-    console.error("❌ Erreur récupération statistiques:", err);
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+  // ✅ Plus besoin d'appel API - on utilise les données passées en props
   useEffect(() => {
-    if (predictionsFile && actualFile) {
-      fetchStatistics();
+    if (data && data.statistics) {
+      const { predictions, actual } = data.statistics;
+      
+      if (predictions && actual) {
+        const parsed: Statistic[] = Object.keys(predictions).map((key) => ({
+          name: key,
+          prediction: Number(predictions[key]),
+          actual: Number(actual[key]),
+        }));
+        setStatistics(parsed);
+      }
     }
-  }, [predictionsFile, actualFile]);
+  }, [data]);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
@@ -108,6 +87,10 @@ export default function ModelStatisticsTable({
             </TableBody>
           </Table>
         </div>
+      )}
+
+      {!loading && !error && statistics.length === 0 && data && (
+        <p className="text-gray-500">Aucune statistique disponible</p>
       )}
     </div>
   );

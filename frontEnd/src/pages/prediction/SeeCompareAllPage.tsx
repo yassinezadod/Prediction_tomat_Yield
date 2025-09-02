@@ -15,7 +15,7 @@ const location = useLocation();
 
       <div className="space-y-5 sm:space-y-6">
        
-      <CompareTableAll data={data} />
+      <CompareTableAll  />
 
       </div>
     </div>

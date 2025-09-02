@@ -10,33 +10,46 @@ import ModelStatisticsTable from "../../components/ecommerce/ModelStatisticsTabl
 import ModelMetricsTable from "../../components/ecommerce/ModelMetricsTable";
 import StatisticsChart from "../../components/ecommerce/StatisticsChart";
 import ModelComparaisonChart from "./ModelComparaisonChart";
-
-
-import { usePredictionData } from "../../context/DataContext";
-
 // Page principale optimisée
 // Page principale optimisée
 export default function PredictionPageComparaison() {
-  const { predictionFile, setPredictionFile, actualFile, setActualFile, csvData, setCsvData, apiData, setApiData } = usePredictionData();
+  const [predictionFile, setPredictionFile] = useState<File | null>(null);
+  const [actualFile, setActualFile] = useState<File | null>(null);
+  const [csvData, setCsvData] = useState<any[]>([]);
+  const [originalCsv, setOriginalCsv] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  
+  // ✅ Nouveaux states pour les données partagées
+  const [apiData, setApiData] = useState<any>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
+  // Appel unique qui récupère toutes les données nécessaires
   useEffect(() => {
     const fetchAllData = async () => {
-      if (!predictionFile || !actualFile || csvData.length > 0) return; // ✅ Ne pas refaire l'appel si csvData existe
+      if (!predictionFile || !actualFile) return;
 
       setLoading(true);
       setApiError(null);
-
+      
       try {
+        // ✅ Appel parallèle des deux APIs
         const [comparisonResult, jsonResult] = await Promise.all([
           predictionService.compareCSVsWithOriginal(predictionFile, actualFile),
           predictionService.compareCSVsAsJSON(predictionFile, actualFile)
         ]);
 
+        // Stocker les résultats de la comparaison (pour le chart et table)
         setCsvData(comparisonResult.data);
+        setOriginalCsv(comparisonResult.originalCsv);
+        
+        // ✅ Stocker les données JSON (pour metrics et statistics)
         setApiData(jsonResult);
+        
+        console.log("CSV Data:", comparisonResult.data);
+        console.log("JSON Data:", jsonResult);
+
       } catch (err) {
+        console.error("Erreur API:", err);
         const errorMessage = err instanceof Error ? err.message : "Erreur lors du traitement des fichiers";
         setApiError(errorMessage);
       } finally {
@@ -45,7 +58,7 @@ export default function PredictionPageComparaison() {
     };
 
     fetchAllData();
-  }, [predictionFile, actualFile, csvData, setCsvData, setApiData]);
+  }, [predictionFile, actualFile]);
 
   return (
     <div>
@@ -95,12 +108,16 @@ export default function PredictionPageComparaison() {
 
         {csvData.length > 0 && (
           <CompareTableCsv
-          data={csvData}
-          originalCsv="" // tu peux le stocker dans le context si besoin
-          predictionFile={predictionFile!}
-          actualFile={actualFile!}
-          columns={["Prediction_Rendement","Rendement_Actual","Erreur_Absolue"]}
-        />
+            data={csvData}
+            originalCsv={originalCsv}
+            predictionFile={predictionFile!}   
+            actualFile={actualFile!}
+            columns={[
+              "Prediction_Rendement",
+              "Rendement_Actual",
+              "Erreur_Absolue",
+            ]}
+          />
         )}
       </div>
     </div>

@@ -27,7 +27,7 @@ export default function CompareTableCsv({
   const navigate = useNavigate();
 
   const seeAllData = () => {
-    navigate("/see-compare-all", { state: { data } });
+    navigate("/see-compare-all", { state: { data  } });
   };
 
   // const downloadResults = () => {
