@@ -2,6 +2,25 @@ import flask
 from application import db
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
+from mongoengine import Document, StringField, ListField, EmbeddedDocument, EmbeddedDocumentField, DateTimeField, DictField
+
+
+
+
+
+
+class CSVFileContent(EmbeddedDocument):
+    filename = StringField(required=True)
+    content = ListField(DictField())  # Chaque ligne du CSV comme dict
+
+class History(Document):
+    user_id = StringField(required=False)  # optionnel : lier à un utilisateur
+    action_type = StringField(required=True)  # ex: "prediction_csv", "compare_csv", "login"
+    description = StringField()
+    files = ListField(EmbeddedDocumentField(CSVFileContent))  # fichiers associés
+    results = DictField()  # métriques ou données retournées
+    created_at = DateTimeField(default=datetime.datetime.utcnow)
+
 
 class users(db.Document):
     # Nouveaux champs

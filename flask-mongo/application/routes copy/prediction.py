@@ -1,5 +1,4 @@
 #Importing necessary libraries
-import datetime
 from application import app,db,api,jwt,mail,serializer
 from flask import render_template, jsonify, json, redirect, flash, url_for, request,Response
 from application.models import users,courses
@@ -21,7 +20,6 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import numpy as np
 from application.ml.analyse import  find_week_column,find_actual_column,find_prediction_column,validate_and_clean_data,calculate_metrics,calculate_individual_metrics
 
-from application.models import History, CSVFileContent
 
 
 
@@ -158,15 +156,6 @@ class PredictCSVDownloadEndpoint(Resource):
             
             # Faire les prédictions
             result_df = predict_batch(df)
-
-            # 🔹 Enregistrer l'historique
-            History(
-                action_type="prediction_csv_download",
-                description="CSV uploadé et prédictions générées pour téléchargement",
-                files=[CSVFileContent(filename=file.filename, content=df.to_dict('records'))],
-                results={"predictions": result_df['Prediction_Rendement'].tolist()},
-                created_at=datetime.datetime.utcnow()
-            ).save()
             
             # Créer un CSV en réponse
             output = io.StringIO()
@@ -371,29 +360,6 @@ class CompareEndpoint(Resource):
                 'prediction_file_columns': list(df_predictions.columns),
                 'actual_file_columns': list(df_actual.columns)
             }
-            # 🔹 Enregistrer l'historique
-            try:
-                History(
-                    action_type="compare_csv",
-                    description="Comparaison des prédictions avec valeurs réelles",
-                    files=[
-                        CSVFileContent(filename=predictions_file.filename, content=df_predictions.to_dict('records')),
-                        CSVFileContent(filename=actual_file.filename, content=df_actual.to_dict('records'))
-                    ],
-                    results={
-                        'comparisons': comparisons,
-                        'global_metrics': global_metrics,
-                        'statistics': statistics,
-                        'columns_used': columns_used
-                    },
-                    created_at=datetime.datetime.utcnow()
-                ).save()
-            except Exception as e:
-                print("Erreur Mongo:", e)
-
-
-
-            
             
             return {
                 'total_rows': len(predictions),

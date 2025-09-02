@@ -1,0 +1,133 @@
+#Importing necessary libraries
+from application import app,db,api,jwt,mail,serializer
+from flask import render_template, jsonify, json, redirect, flash, url_for, request,Response
+from application.models import users,courses
+from flask_restx import Resource,fields
+from flask_mail import Mail, Message
+from email.mime.base import MIMEBase
+from email import encoders
+import tempfile
+import os
+import mimetypes
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from flask_jwt_extended import create_access_token,jwt_required,get_jwt
+from bson import ObjectId
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from application.ml.predictor import predict, FEATURE_COLUMNS,predict_single,predict_batch
+import io
+import pandas as pd
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import numpy as np
+from application.ml.analyse import  find_week_column,find_actual_column,find_prediction_column,validate_and_clean_data,calculate_metrics,calculate_individual_metrics
+
+#Creating a namespace for our API
+ns2 = api.namespace('courses', description='The courses namespace provides endpoints for managing courses, including creating, retrieving, updating, and deleting course information.')
+
+# Define the expected payload using the 'fields' module
+course_model = ns2.model('Course', {
+    'courseID': fields.String(required=True, description='enter your courseID'),
+    'title': fields.String(required=True, description='enter your title'),
+    'description': fields.String(required=True, description='enter your description'),
+    'credits': fields.Integer(required=True, description='enter your credits'),
+    'term': fields.String(required=True, description='enter your term')
+})
+@ns.route('/admin/by-email/<string:email>')
+class AdminUpdateDeleteUserByEmail(Resource):
+    @ns.expect(user_model, auth_header) 
+    @ns.doc(security='Bearer Auth', parser=auth_header)
+    @jwt_required()  # à activer si tu veux que seul l'admin authentifié puisse l'utiliser
+    def put(self, email):
+        """
+        Admin: Update user by email (no password check)
+        """
+        try:
+            data = api.payload
+            target_user = users.objects(email=email).first()
+            
+            if not target_user:
+                return {'message': 'User not found'}, 404
+
+            # ⚠️ On évite de mettre à jour l'email car c’est l’identifiant
+            data.pop('email', None)
+            # ⚠️ On ne touche pas non plus au password directement ici
+            data.pop('password', None)
+
+            # Mise à jour des champs
+            users.objects(email=email).update(**data)
+
+            # Récupérer l'utilisateur mis à jour sans password/verified
+            updated_user = users.objects.exclude('password', 'verified').get(email=email)
+            user_json = json.loads(updated_user.to_json())
+
+            return {
+                "message": f"User {email} updated successfully",
+                "user": user_json
+            }, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+    def delete(self, email):
+        """
+        Admin: Delete user by email
+        """
+        try:
+            target_user = users.objects(email=email).first()
+            if not target_user:
+                return {'message': 'User not found'}, 404
+
+            user_email = target_user.email
+            target_user.delete()
+
+            verification = users.objects(email=email).first()
+            if verification:
+                return {"error": "Failed to delete user"}, 500
+
+            return {"message": f"User {user_email} deleted successfully"}, 200
+        except Exception as e:
+            return {'message': str(e)}, 500
+
+
+#Defining endpoints for getting and posting courses
+@ns2.route('')
+class GetAndPost(Resource):
+    @ns2.doc(security='Bearer Auth', parser=auth_header)
+    @jwt_required() # add this if you're using JWT for authentication
+    def get(self):
+        return jsonify(courses.objects.all())
+    
+    @ns2.expect(course_model, auth_header)  # Use the 'expect' decorator to specify the expected payload
+    @ns2.doc(security='Bearer Auth', parser=auth_header)
+    @jwt_required() # add this if you're using JWT for authentication
+    def post(self):
+        data = api.payload
+        course = courses(
+            courseID=data['courseID'],
+            title=data['title'],
+            description=data['description'],
+            credits=data['credits'],
+            term=data['term']
+        )
+        course.save()
+        return jsonify(courses.objects(courseID=data['courseID']))
+
+#Defining endpoints for getting, updating and deleting courses by ID
+@ns2.route('/<idx>')
+class GetUpdateDelete(Resource):
+    @ns2.doc(security='Bearer Auth', parser=auth_header)
+    @jwt_required() # add this if you're using JWT for authentication
+    def get(self, idx):
+        return jsonify(courses.objects(courseID=idx))
+    
+    @ns2.expect(course_model, auth_header)  # Use the 'expect' decorator to specify the expected payload
+    @ns2.doc(security='Bearer Auth', parser=auth_header)
+    @jwt_required() # add this if you're using JWT for authentication
+    def put(self, idx):
+        data = api.payload
+        courses.objects(courseID=idx).update(**data)
+        return jsonify(courses.objects(courseID=idx))
+    
+    @ns2.doc(security='Bearer Auth', parser=auth_header)
+    @jwt_required() # add this if you're using JWT for authentication
+    def delete(self, idx):
+        courses.objects(courseID=idx).delete()
+        return jsonify("Course is deleted!")

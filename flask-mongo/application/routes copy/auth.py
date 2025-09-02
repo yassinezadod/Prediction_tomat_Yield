@@ -19,7 +19,6 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import numpy as np
 from application.ml.analyse import  find_week_column,find_actual_column,find_prediction_column,validate_and_clean_data,calculate_metrics,calculate_individual_metrics
-from application.utils.history import log_action
 
 
 
@@ -294,13 +293,7 @@ class Login(Resource):
         # 🟢 Normaliser l'ID
         user_json["id"] = str(user_json["_id"]["$oid"])
         user_json.pop("_id", None)  # optionnel : supprimer _id brut
-         # 🔹 Log login
-        log_action(
-            user_id=str(user.id),
-            action_type="login",
-            description="Connexion utilisateur",
-            results={"email": user.email}
-        )
+        
         return {
             'access_token': access_token,
             'user': user_json
