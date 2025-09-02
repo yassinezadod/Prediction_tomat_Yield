@@ -52,4 +52,8 @@ api.init_app(app)
 jwt = JWTManager(app)
 
 #Importing the routes module where the app routes are defined
-from application import routes 
+#from application import routes 
+from application.routes import namespaces
+
+for ns in namespaces:
+    api.add_namespace(ns)
