@@ -3,12 +3,18 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   BoxIconLine,
+  CSVDown,
+  ErrorIcon,
+  FileTime,
+  Folders,
   GroupIcon,
+  Ruler,
+  Target,
 } from "../../icons";
 import Badge from "../ui/badge/Badge";
 import { UserCountResponse, usersService } from "../../services/usersService";
 
-export default function EcommerceMetrics() {
+export default function UserKPIs() {
      const [userCount, setUserCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -53,7 +59,7 @@ export default function EcommerceMetrics() {
       
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <BoxIconLine className="text-gray-800 size-6 dark:text-white/90" />
+          <Folders className="text-gray-800 size-6 dark:text-white/90" />
         </div>
         <div className="flex items-end justify-between mt-5">
           <div>
@@ -75,7 +81,7 @@ export default function EcommerceMetrics() {
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <BoxIconLine className="text-gray-800 size-6 dark:text-white/90" />
+          <CSVDown className="text-gray-800 size-6 dark:text-white/90" />
         </div>
         <div className="flex items-end justify-between mt-5">
           <div>
@@ -98,7 +104,7 @@ Last File Uploaded            </span>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <BoxIconLine className="text-gray-800 size-6 dark:text-white/90" />
+          <ErrorIcon className="text-gray-800 size-6 dark:text-white/90" />
         </div>
         <div className="flex items-end justify-between mt-5">
           <div>
@@ -119,12 +125,33 @@ Global Error            </span>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <BoxIconLine className="text-gray-800 size-6 dark:text-white/90" />
+          <Target className="text-gray-800 size-6 dark:text-white/90" />
         </div>
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-mean_actual          </span>
+Average Prediction          </span>
+            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+              5,359
+            </h4>
+          </div>
+
+          <Badge color="error">
+            <ArrowDownIcon />
+            9.05%
+          </Badge>
+        </div>
+      </div>
+
+
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+          <Ruler className="text-gray-800 size-6 dark:text-white/90" />
+        </div>
+        <div className="flex items-end justify-between mt-5">
+          <div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+Average Actual          </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
               5,359
             </h4>

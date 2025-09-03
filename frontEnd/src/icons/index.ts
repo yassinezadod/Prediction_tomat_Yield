@@ -58,9 +58,20 @@ import { ReactComponent as Phone } from "./phone-call-phone-svgrepo-com.svg?reac
 import { ReactComponent as AIIcon } from "./ai-svgrepo-com.svg?react";
 import { ReactComponent as CSVDown } from "./download-file-1-svgrepo-com.svg?react";
 import { ReactComponent as Analyse} from "./report-text-svgrepo-com.svg?react";
+import { ReactComponent as Folders} from "./folders-svgrepo-com.svg?react";
+import { ReactComponent as FileTime} from "./file-time-svgrepo-com.svg?react";
+import { ReactComponent as ErrorIC} from "./error-svgrepo-com.svg?react";
+
+import { ReactComponent as Target} from "./target-arrow-svgrepo-com (1).svg?react";
+
+import { ReactComponent as Ruler} from "./ruler-svgrepo-com.svg?react";
 
 export {
-  
+  Ruler,
+  Target,
+  ErrorIC,
+  FileTime,
+  Folders,
 Analyse,
   CSVDown,
   AIIcon,

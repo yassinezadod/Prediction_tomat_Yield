@@ -100,3 +100,53 @@ export interface AuthContextType {
   updateUser: (userData: Partial<User>, password: string) => Promise<void>; // Nouvelle méthode
   forgotPassword: (data: ForgotPasswordRequest) => Promise<void>;
 }
+
+
+
+// Interfaces pour typer les données
+export interface UserKpis {
+  total_files: number;
+  last_file: string | null;
+  last_date: string | null;
+  mean_pred: number | null;
+}
+
+export interface UserHistoryItem {
+  dataset: string[];
+  date: string;
+  rows: number;
+  mean_pred: number | null;
+  min_pred: number | null;
+  max_pred: number | null;
+  download_link: string;
+}
+
+export interface UserDashboardResponse {
+  kpis: UserKpis;
+  history: UserHistoryItem[];
+}
+
+
+export interface AdminKpis {
+  total_users: number;
+  total_datasets: number;
+  last_dataset: {
+    file: string | null;
+    user_id: string | null;
+    date: string | null;
+  } | null;
+  problematic_datasets: number;
+}
+
+export interface AdminDatasetItem {
+  user_id: string;
+  datasets: string[];
+  date: string;
+  rows: number;
+  error: Record<string, number> | null;
+}
+
+export interface AdminDashboardResponse {
+  kpis: AdminKpis;
+  datasets: AdminDatasetItem[];
+}

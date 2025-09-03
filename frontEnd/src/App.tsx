@@ -44,6 +44,7 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import HomeAdmin from "./pages/Dashboard/HomeAdmin";
 import { PredictionCsvProvider } from "./context/PredictionCsvContext";
+import HistoryAll from "./pages/history/HistoryAll";
 
 
 
@@ -145,7 +146,14 @@ export default function App() {
       <SeeAllPage />
     </PredictionCsvProvider>
   }
-/>
+  />
+
+
+  <Route
+  path="/History/all"
+  element={
+      <HistoryAll />
+  }/>
                           <Route path="/compare-predict" element={<PredictionPageComparaison />} />
 
              
