@@ -5,9 +5,11 @@ import PageMeta from "../../components/common/PageMeta";
 import BasicTableCsv from "../../components/tables/BasicTables/BasicTableCsv";
 import { predictionService } from "../../services/predictionService";
 import ModelPredictionChart from "./ModelPredictionChart";
+import { usePredictionCsv } from "../../context/PredictionCsvContext";
 
 export default function PredictionPage() {
-  const [csvData, setCsvData] = useState<any[]>([]);
+
+   const { csvData, setCsvData } = usePredictionCsv();
   const [loading, setLoading] = useState(false);
 
   const handleFileUpload = async (files: File[]) => {
@@ -15,14 +17,15 @@ export default function PredictionPage() {
     setLoading(true);
     try {
       const result = await predictionService.uploadCSVAndGetResults(files[0]);
-      setCsvData(result);
+      setCsvData(result); // ✅ stocké dans le contexte
     } catch (err) {
-      console.error("Erreur API Prediction:", err);
+      console.error(err);
       alert("Erreur lors du traitement du fichier");
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div>

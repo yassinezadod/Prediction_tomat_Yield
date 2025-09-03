@@ -43,6 +43,7 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import HomeAdmin from "./pages/Dashboard/HomeAdmin";
+import { PredictionCsvProvider } from "./context/PredictionCsvContext";
 
 
 
@@ -129,11 +130,24 @@ export default function App() {
             <Route path="/bar-chart" element={<BarChart />} />
             {/* Prediction page */}
 
-
-             <Route path="/form-predict" element={<PredictionPage />} />
+<Route
+  path="/form-predict"
+  element={
+    <PredictionCsvProvider>
+      <PredictionPage />
+    </PredictionCsvProvider>
+  }
+/>
+<Route
+  path="/see-all"
+  element={
+    <PredictionCsvProvider>
+      <SeeAllPage />
+    </PredictionCsvProvider>
+  }
+/>
                           <Route path="/compare-predict" element={<PredictionPageComparaison />} />
 
-             <Route path="/see-all" element={<SeeAllPage />} />
              
              <Route path="/see-compare-all" element={<SeeCompareAllPage />} />
 

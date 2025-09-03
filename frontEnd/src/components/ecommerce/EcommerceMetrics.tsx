@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -5,8 +6,23 @@ import {
   GroupIcon,
 } from "../../icons";
 import Badge from "../ui/badge/Badge";
+import { UserCountResponse, usersService } from "../../services/usersService";
 
 export default function EcommerceMetrics() {
+     const [userCount, setUserCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchUserCount = async () => {
+      try {
+        const res: UserCountResponse = await usersService.getUserCount();
+        setUserCount(res.total_users);
+      } catch (err) {
+        console.error("Erreur lors de la récupération du nombre d’utilisateurs :", err);
+      }
+    };
+
+    fetchUserCount();
+  }, []);
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
       {/* <!-- Metric Item Start --> */}
@@ -18,10 +34,11 @@ export default function EcommerceMetrics() {
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              Customers
+              Users
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              3,782
+             {userCount}
+
             </h4>
           </div>
           <Badge color="success">

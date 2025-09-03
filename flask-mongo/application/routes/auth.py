@@ -1,7 +1,7 @@
 #Importing necessary libraries
 from application import app,db,api,jwt,mail,serializer
 from flask import render_template, jsonify, json, redirect, flash, url_for, request,Response
-from application.models import users,courses
+from application.models import History, users,courses
 from flask_restx import Resource,fields
 from flask_mail import Mail, Message
 from email.mime.base import MIMEBase
@@ -316,3 +316,97 @@ class SignOut(Resource):
         # Delete access token from client-side
         # Return success message
         return {'message': 'Logged out successfully'}, 200
+    
+
+
+@ns.route('/count')
+class UserCount(Resource):
+    @ns.doc(security='Bearer Auth', parser=auth_header)
+    @jwt_required()
+    def get(self):
+        try:
+            count = users.objects.count()  # nombre total d'utilisateurs
+            return {"total_users": count}, 200
+        except Exception as e:
+            return {"message": str(e)}, 500
+        
+
+
+@ns.route('/dashboard/admin')
+class AdminDashboard(Resource):
+    @jwt_required()
+    def get(self):
+        current_user = users.objects(id=get_jwt_identity()).first()
+        if not current_user or current_user.role != "admin":
+            return {"error": "Accès non autorisé"}, 403
+
+        try:
+            total_users = users.objects.count()
+            total_datasets = History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).count()
+            last_dataset = History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).order_by('-created_at').first()
+
+            problematic = History.objects(__raw__={"results.global_metrics.MAE": {"$gt": 15}})
+
+            kpis = {
+                "total_users": total_users,
+                "total_datasets": total_datasets,
+                "last_dataset": {
+                    "file": last_dataset.files[0].filename if last_dataset and last_dataset.files else None,
+                    "user_id": last_dataset.user_id if last_dataset else None,
+                    "date": last_dataset.created_at.isoformat() if last_dataset else None
+                },
+                "problematic_datasets": problematic.count()
+            }
+
+            datasets = []
+            for h in History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).order_by('-created_at'):
+                datasets.append({
+                    "user_id": h.user_id,
+                    "datasets": [f.filename for f in h.files],
+                    "date": h.created_at.isoformat(),
+                    "rows": len(h.files[0].content) if h.files else 0,
+                    "error": h.results.get("global_metrics")
+                })
+
+            return {"kpis": kpis, "datasets": datasets}, 200
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+
+
+@ns.route('/dashboard/user')
+class UserDashboard(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+        try:
+            history = History.objects(user_id=user_id).order_by('-created_at')
+
+            total_files = history.count()
+            last_entry = history.first()
+
+            kpis = {
+                "total_files": total_files,
+                "last_file": last_entry.files[0].filename if last_entry and last_entry.files else None,
+                "last_date": last_entry.created_at.isoformat() if last_entry else None,
+                "global_error": last_entry.results.get("global_metrics") if last_entry and "global_metrics" in last_entry.results else None,
+                "mean_pred": last_entry.results["statistics"]["predictions"]["mean"] if last_entry and "statistics" in last_entry.results else None,
+                "mean_actual": last_entry.results["statistics"]["actual"]["mean"] if last_entry and "statistics" in last_entry.results else None,
+            }
+
+            historique = []
+            for h in history:
+                historique.append({
+                    "dataset": [f.filename for f in h.files],
+                    "date": h.created_at.isoformat(),
+                    "rows": len(h.files[0].content) if h.files else 0,
+                    "mean_pred": h.results.get("statistics", {}).get("predictions", {}).get("mean"),
+                    "mean_actual": h.results.get("statistics", {}).get("actual", {}).get("mean"),
+                    "error": h.results.get("global_metrics")
+                })
+
+            return {"kpis": kpis, "history": historique}, 200
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+

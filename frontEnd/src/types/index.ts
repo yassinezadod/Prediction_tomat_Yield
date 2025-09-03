@@ -14,7 +14,10 @@ export interface User {
   created_at?: string;
   
 }
-
+// 🔹 Définition du type de réponse attendu depuis l'API Flask
+export interface UserCountResponse {
+  total_users: number;
+}
 export interface LoginRequest {
   email: string;
   password: string;

@@ -134,6 +134,8 @@ class PredictCSVEndpoint(Resource):
 
 @predict_ns.route('/csv/download')
 class PredictCSVDownloadEndpoint(Resource):
+    @jwt_required(optional=True)  # 👈 permet JWT optionnel
+
     def post(self):
         """
         Upload un fichier CSV et retourne un CSV avec les prédictions ajoutées
@@ -158,9 +160,12 @@ class PredictCSVDownloadEndpoint(Resource):
             
             # Faire les prédictions
             result_df = predict_batch(df)
+            user_id = get_jwt_identity()
 
             # 🔹 Enregistrer l'historique
             History(
+                user_id=user_id,
+
                 action_type="prediction_csv_download",
                 description="CSV uploadé et prédictions générées pour téléchargement",
                 files=[CSVFileContent(filename=file.filename, content=df.to_dict('records'))],
@@ -261,6 +266,8 @@ comparison_response_model = predict_ns.model('ComparisonResponse', {
 
 @predict_ns.route('/compare')
 class CompareEndpoint(Resource):
+    @jwt_required(optional=True)  # 👈 permet JWT optionnel
+
     def post(self):
         """
         Compare les prédictions avec les valeurs réelles
@@ -371,9 +378,14 @@ class CompareEndpoint(Resource):
                 'prediction_file_columns': list(df_predictions.columns),
                 'actual_file_columns': list(df_actual.columns)
             }
+
             # 🔹 Enregistrer l'historique
             try:
+                user_id = get_jwt_identity()
+
                 History(
+                    
+                    user_id=user_id,
                     action_type="compare_csv",
                     description="Comparaison des prédictions avec valeurs réelles",
                     files=[

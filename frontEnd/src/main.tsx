@@ -12,6 +12,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
       <AppWrapper>
+
           <PredictionDataProvider>
 
         <App />
