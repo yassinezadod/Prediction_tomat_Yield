@@ -1,4 +1,5 @@
 #Importing necessary libraries
+from collections import defaultdict
 from datetime import timedelta
 from application import app,db,api,jwt,mail,serializer
 from flask import render_template, jsonify, json, redirect, flash, url_for, request,Response
@@ -343,8 +344,12 @@ class AdminDashboard(Resource):
 
         try:
             total_users = users.objects.count()
+            #total_datasets de predictions pour users: prediction_csv_download
             total_datasets = History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).count()
+
             last_dataset = History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).order_by('-created_at').first()
+            #nombre de test total de prediction de users :prediction_csv_download
+            #nombre de test predction pour chque user :prediction_csv_download
 
             problematic = History.objects(__raw__={"results.global_metrics.MAE": {"$gt": 15}})
 
@@ -411,6 +416,8 @@ class AdminDashboard(Resource):
 #             return {"error": str(e)}, 500
 
 
+
+
 @ns.route('/dashboard/user')
 class UserDashboard(Resource):
     @jwt_required()
@@ -438,7 +445,19 @@ class UserDashboard(Resource):
                 ),
             }
 
-            # ✅ Historique uniquement des prédictions
+            # 🔹 Nombre de tests par mois (calculé AVANT l'historique)
+            tests_per_month = defaultdict(int)
+            for h in history:
+                month_key = h.created_at.strftime("%Y-%m")  # "2025-09"
+                tests_per_month[month_key] += 1
+
+            # transformer en liste triée
+            tests_per_month_list = sorted(
+                [{"month": k, "count": v} for k, v in tests_per_month.items()],
+                key=lambda x: x["month"]
+            )
+
+            # ✅ Historique uniquement des téléchargements CSV
             historique = []
             for h in history:
                 predictions = h.results.get("predictions", [])
@@ -455,11 +474,17 @@ class UserDashboard(Resource):
                     "download_link": f"/api/predictions/download/{str(h.id)}"
                 })
 
-            return {"kpis": kpis, "history": historique}, 200
+            return {
+                "kpis": kpis, 
+                "history": historique, 
+                "tests_per_month": tests_per_month_list
+            }, 200
 
         except Exception as e:
+            print(f"[ERROR] Dashboard error: {str(e)}")  # Debug
+            import traceback
+            traceback.print_exc()  # Affiche la stack trace complète
             return {"error": str(e)}, 500
-
 
 
 

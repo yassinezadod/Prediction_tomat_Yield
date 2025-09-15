@@ -68,7 +68,7 @@ export default function HistorySection({ history }: HistorySectionProps) {
           </TableHeader>
 
           {/* Table Body */}
-          <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
+          <TableBody className="divide-y divide-gray-100 dark:divide-gray-800 ">
             {history.length > 0 ? (
               history.slice(0, 5).map((h, idx) => (
                 <TableRow key={idx}>
@@ -85,8 +85,8 @@ export default function HistorySection({ history }: HistorySectionProps) {
                   <TableCell className="py-3 text-center text-gray-500 text-theme-sm dark:text-gray-400">
                     {h.rows}
                   </TableCell>
-                  <TableCell className="py-3 text-right text-gray-500 text-theme-sm dark:text-gray-400">
-                    {h.mean_pred ?? "-"}
+                  <TableCell className="py-3 text-center text-gray-500 text-theme-sm dark:text-gray-400">
+{h.mean_pred !== null ? h.mean_pred.toFixed(2) : "-"}
                   </TableCell>
                 </TableRow>
               ))

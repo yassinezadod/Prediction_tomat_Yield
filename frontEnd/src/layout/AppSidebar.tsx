@@ -31,7 +31,8 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+        path: "/",
+
   },
   {
     icon: <CalenderIcon />,
@@ -48,11 +49,11 @@ const navItems: NavItem[] = [
     name: "Yield Prediction",
     path: "/form-predict",
   },
-  {
-    icon: <ListIcon />,
-    name: "Predictions Analysis",
-    path: "/compare-predict",
-  },
+  // {
+  //   icon: <ListIcon />,
+  //   name: "Predictions Analysis",
+  //   path: "/compare-predict",
+  // },
   // {
   //   name: "Forms",
   //   icon: <ListIcon />,

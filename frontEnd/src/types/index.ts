@@ -120,10 +120,34 @@ export interface UserHistoryItem {
   max_pred: number | null;
   download_link: string;
 }
+// Interfaces pour typer les données
+export interface UserKpis {
+  total_files: number;
+  last_file: string | null;
+  last_date: string | null;
+  mean_pred: number | null;
+}
 
+export interface UserHistoryItem {
+  dataset: string[];
+  date: string;
+  rows: number;
+  mean_pred: number | null;
+  min_pred: number | null;
+  max_pred: number | null;
+  download_link: string;
+}
+
+// Nouvelle interface pour les tests par mois
+export interface TestsPerMonth {
+  month: string;  // "2025-09"
+  count: number;
+}
 export interface UserDashboardResponse {
   kpis: UserKpis;
   history: UserHistoryItem[];
+  tests_per_month: TestsPerMonth[]; // <-- ajouté ici
+
 }
 
 

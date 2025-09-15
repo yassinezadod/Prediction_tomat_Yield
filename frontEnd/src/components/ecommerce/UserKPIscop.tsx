@@ -3,27 +3,19 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   BoxIconLine,
-  CalenderIcon,
   CSVDown,
   ErrorIcon,
   FileTime,
   Folders,
   GroupIcon,
-  Hour,
   Ruler,
   Target,
 } from "../../icons";
 import Badge from "../ui/badge/Badge";
 import { UserCountResponse, usersService } from "../../services/usersService";
-import { UserKpis } from "../../types";
-import { Calendar } from "@fullcalendar/core/index.js";
 
-interface UserKPIsProps {
-  kpis: UserKpis; // objet unique, pas un tableau
-}
-
-export default function UserKPIs({ kpis }: UserKPIsProps) {
-  const [userCount, setUserCount] = useState<number | null>(null);
+export default function UserKPIs() {
+     const [userCount, setUserCount] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchUserCount = async () => {
@@ -39,7 +31,28 @@ export default function UserKPIs({ kpis }: UserKPIsProps) {
   }, []);
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
-    
+      {/* <!-- Metric Item Start --> */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+          <GroupIcon className="text-gray-800 size-6 dark:text-white/90" />
+        </div>
+
+        <div className="flex items-end justify-between mt-5">
+          <div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Users
+            </span>
+            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+             {userCount}
+
+            </h4>
+          </div>
+          <Badge color="success">
+            <ArrowUpIcon />
+            11.01%
+          </Badge>
+        </div>
+      </div>
       {/* <!-- Metric Item End --> */}
 
       {/* <!-- Metric Item Start --> */}
@@ -54,12 +67,13 @@ export default function UserKPIs({ kpis }: UserKPIsProps) {
               Total Files Processed
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              {kpis.total_files}
+              5,359
             </h4>
           </div>
 
           <Badge color="error">
             <ArrowDownIcon />
+            9.05%
           </Badge>
         </div>
       </div>
@@ -73,13 +87,14 @@ export default function UserKPIs({ kpis }: UserKPIsProps) {
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
 Last File Uploaded            </span>
-            <h4 className="mt-2 font-bold text-gray-800 text-sm dark:text-white/90">
-              {kpis.last_file}
+            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+              5,359
             </h4>
           </div>
 
           <Badge color="error">
             <ArrowDownIcon />
+            9.05%
           </Badge>
         </div>
       </div>
@@ -89,26 +104,20 @@ Last File Uploaded            </span>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <Hour className="text-gray-800 size-6 dark:text-white/90" />
+          <ErrorIcon className="text-gray-800 size-6 dark:text-white/90" />
         </div>
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-Last Upload Date            </span>
-            <h4 className="mt-2 font-bold text-gray-800 text-sm dark:text-white/90">
-{kpis.last_date
-    ? new Date(kpis.last_date).toLocaleString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : 'No date'}            </h4>
+Global Error            </span>
+            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+              5,359
+            </h4>
           </div>
 
           <Badge color="error">
             <ArrowDownIcon />
+            9.05%
           </Badge>
         </div>
       </div>
@@ -121,20 +130,39 @@ Last Upload Date            </span>
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-Last Prediction  Average         </span>
+Average Prediction          </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-{kpis.mean_pred != null ? kpis.mean_pred.toFixed(2) : '0.00'}
+              5,359
             </h4>
           </div>
 
           <Badge color="error">
             <ArrowDownIcon />
+            9.05%
           </Badge>
         </div>
       </div>
 
 
-      
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+          <Ruler className="text-gray-800 size-6 dark:text-white/90" />
+        </div>
+        <div className="flex items-end justify-between mt-5">
+          <div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+Average Actual          </span>
+            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+              5,359
+            </h4>
+          </div>
+
+          <Badge color="error">
+            <ArrowDownIcon />
+            9.05%
+          </Badge>
+        </div>
+      </div>
     </div>
   );
 }
