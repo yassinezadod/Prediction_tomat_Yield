@@ -519,22 +519,34 @@ class AdminDashboard(Resource):
             # Si History.user_id est en string
             user_ids_non_admin = [str(u.id) for u in users.objects(role__ne="admin")]
 
+            # Logins de tous les utilisateurs non-admin
             total_logins = History.objects(
                 action_type="login",
                 user_id__in=user_ids_non_admin
             ).count()
 
-
+            # Last dataset téléchargé
             last_dataset = History.objects(action_type__in=["prediction_csv_download"]).order_by('-created_at').first()
 
-            # Utilisateurs les plus actifs (si tu veux aussi exclure admins ici 👇)
+            # Utilisateurs les plus actifs (non-admin)
             active_users = (
                 History.objects(
                     action_type__in=["prediction_csv_download"],
-                    user_id__in=user_ids_non_admin  # ✅ exclure admins ici aussi si besoin
+                    user_id__in=user_ids_non_admin
                 ).item_frequencies("user_id")
             )
             top_users = sorted(active_users.items(), key=lambda x: x[1], reverse=True)[:5]
+
+            # --- KPIs spécifiques à cet admin ---
+            admin_predictions_count = History.objects(
+                action_type="prediction_csv_download",
+                user_id=str(current_user.id)
+            ).count()
+
+            admin_logins_count = History.objects(
+                action_type="login",
+                user_id=str(current_user.id)
+            ).count()
 
             # --- Construction des KPIs ---
             kpis = {
@@ -550,7 +562,9 @@ class AdminDashboard(Resource):
                 "top_active_users": [
                     {"user_id": str(uid), "count": count}
                     for uid, count in top_users
-                ]
+                ],
+                "admin_predictions_count": admin_predictions_count,
+                "admin_logins_count": admin_logins_count
             }
 
             # --- Liste des datasets pour affichage tableau ---
@@ -564,24 +578,58 @@ class AdminDashboard(Resource):
                     "action_type": h.action_type
                 })
 
-            # --- Statistiques par date ---
+            # --- Historique des comparaisons faites par cet admin ---
+            # comparisons = []
+            # for h in History.objects(action_type="compare_csv", user_id=str(current_user.id)).order_by('-created_at')[:50]:
+            #     comparisons.append({
+            #         "user_id": str(h.user_id),
+            #         "files": [f.filename for f in h.files],
+            #         "description": h.description,
+            #         "global_metrics": h.global_metrics if hasattr(h, "global_metrics") else {},
+            #         "statistics": h.statistics if hasattr(h, "statistics") else {},
+            #         "columns_used": h.columns_used if hasattr(h, "columns_used") else {},
+            #         "date": h.created_at.isoformat()
+            #     })
+            # --- Historique des comparaisons faites par cet admin (seulement global_metrics) ---
+                comparisons = []
+                for h in History.objects(action_type="compare_csv", user_id=str(current_user.id)).order_by('-created_at')[:50]:
+                    comparisons.append({
+                        "user_id": str(h.user_id),
+                        "files": [f.filename for f in h.files],
+                        "description": h.description,
+                        "global_metrics": h.results.get("global_metrics", {}) if hasattr(h, "results") else {},
+                        "date": h.created_at.isoformat()
+                    })
+
+
+            # --- Statistiques par date (pour datasets uniquement) ---
             from collections import Counter
             all_dates = [
                 h.created_at.date().isoformat()
                 for h in History.objects(action_type__in=["prediction_csv_download"])
             ]
-            from datetime import datetime
             date_counts = Counter(all_dates)
             timeline = [{"date": d, "count": c} for d, c in sorted(date_counts.items())]
+
+            # --- Activité mensuelle des admins (logins) ---
+            admin_ids = [str(u.id) for u in users.objects(role="admin")]
+            admin_logins = History.objects(action_type="login", user_id__in=admin_ids)
+            admin_login_dates = [h.created_at.strftime("%Y-%m") for h in admin_logins]
+            login_counts = Counter(admin_login_dates)
+            admin_activity = [{"month": m, "count": c} for m, c in sorted(login_counts.items())]
 
             return {
                 "kpis": kpis,
                 "datasets": datasets,
-                "timeline": timeline
+                "comparisons": comparisons,
+                "timeline": timeline,
+                "admin_activity": admin_activity
             }, 200
 
         except Exception as e:
             return {"error": str(e)}, 500
+
+
 
 @ns.route('/dashboard/admin/users/history')
 class AdminUsersHistory(Resource):

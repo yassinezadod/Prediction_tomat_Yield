@@ -174,19 +174,19 @@ export interface UserDashboardResponse {
 //   kpis: AdminKpis;
 //   datasets: AdminDatasetItem[];
 // }
-
 // --- KPIs pour l’admin ---
 export interface AdminKpis {
   total_users: number;
   total_datasets: number;
   total_predictions: number;
   total_logins: number;
+  admin_predictions_count: number; // nombre de prédictions faites par l'admin connecté
+  admin_logins_count: number;      // nombre de logins faits par l'admin connecté
   last_dataset: {
     file: string | null;
     user_id: string | null;
     date: string | null;
   } | null;
-  //problematic_datasets: number;
   top_active_users: {
     user_id: string;
     count: number;
@@ -202,18 +202,38 @@ export interface AdminDatasetItem {
   action_type: string;
 }
 
+// --- Élément d’un item de comparaison ---
+export interface AdminComparisonItem {
+  user_id: string;
+  files: string[];
+  description: string;
+  global_metrics: Record<string, number>;
+  statistics: Record<string, any>;
+  columns_used: Record<string, any>;
+  date: string;
+}
+
 // --- Élément de la timeline ---
 export interface AdminTimelineItem {
   date: string;
   count: number;
 }
 
-// --- Réponse complète de l’API ---
+// --- Réponse complète de l’API pour le dashboard admin ---
+// --- Réponse complète de l’API pour le dashboard admin ---
 export interface AdminDashboardResponse {
   kpis: AdminKpis;
   datasets: AdminDatasetItem[];
+  comparisons: AdminComparisonItem[];
   timeline: AdminTimelineItem[];
+  admin_activity: AdminActivityItem[];   // ✅ ajouté ici
 }
+// --- Élément de l’activité admin (logins par mois) ---
+export interface AdminActivityItem {
+  month: string; // ex: "2025-09"
+  count: number;
+}
+
 export interface UserHistoryLog {
   action_type: string;
   description: string;

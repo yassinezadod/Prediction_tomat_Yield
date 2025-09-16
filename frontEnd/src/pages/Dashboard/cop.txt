@@ -1,12 +1,5 @@
 
-// {/* History Table */}
-//         <div className="col-span-12">
-//           {data && (
-//             <div className="rounded-2xl bg-white shadow-md p-6">
-//               <HistoryAdminUsers history={data.history} />
-//             </div>
-//           )}
-//         </div>
+
 
 
 
