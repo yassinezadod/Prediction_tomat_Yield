@@ -7,6 +7,7 @@ import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import { LoginRequest } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { authService } from "../../services/authService";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +31,15 @@ const [error, setError] = useState<string>('');
 
     try {
       await login(credentials);
-      navigate('/');
+setTimeout(() => {
+  const loggedUser = authService.getCurrentUser();
+  if (loggedUser?.role === 'admin') {
+    navigate('/admin');
+  } else {
+    navigate('/');
+  }
+}, 0);
+
     } catch (err: any) {
      console.error("Login error:", err);
 

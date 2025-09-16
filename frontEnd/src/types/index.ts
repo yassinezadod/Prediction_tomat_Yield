@@ -151,26 +151,86 @@ export interface UserDashboardResponse {
 }
 
 
+// export interface AdminKpis {
+//   total_users: number;
+//   total_datasets: number;
+//   last_dataset: {
+//     file: string | null;
+//     user_id: string | null;
+//     date: string | null;
+//   } | null;
+//   problematic_datasets: number;
+// }
+
+// export interface AdminDatasetItem {
+//   user_id: string;
+//   datasets: string[];
+//   date: string;
+//   rows: number;
+//   error: Record<string, number> | null;
+// }
+
+// export interface AdminDashboardResponse {
+//   kpis: AdminKpis;
+//   datasets: AdminDatasetItem[];
+// }
+
+// --- KPIs pour l’admin ---
 export interface AdminKpis {
   total_users: number;
   total_datasets: number;
+  total_predictions: number;
+  total_logins: number;
   last_dataset: {
     file: string | null;
     user_id: string | null;
     date: string | null;
   } | null;
-  problematic_datasets: number;
+  //problematic_datasets: number;
+  top_active_users: {
+    user_id: string;
+    count: number;
+  }[];
 }
 
+// --- Élément d’un dataset ---
 export interface AdminDatasetItem {
   user_id: string;
   datasets: string[];
   date: string;
   rows: number;
-  error: Record<string, number> | null;
+  action_type: string;
 }
 
+// --- Élément de la timeline ---
+export interface AdminTimelineItem {
+  date: string;
+  count: number;
+}
+
+// --- Réponse complète de l’API ---
 export interface AdminDashboardResponse {
   kpis: AdminKpis;
   datasets: AdminDatasetItem[];
+  timeline: AdminTimelineItem[];
+}
+export interface UserHistoryLog {
+  action_type: string;
+  description: string;
+  date: string;
+  files: string[];
+  metrics: Record<string, number>;
+}
+
+export interface AdminUserHistoryItem {
+  user_id: string;
+  email: string;
+  name: string;
+  total_predictions: number;
+  total_logins: number;
+  history: UserHistoryLog[];
+}
+
+export interface AdminUsersHistoryResponse {
+  users_history: AdminUserHistoryItem[];
 }

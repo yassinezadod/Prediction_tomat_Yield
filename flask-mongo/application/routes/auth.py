@@ -321,8 +321,8 @@ class SignOut(Resource):
     
 
 
-@ns.route('/count')
-class UserCount(Resource):
+@ns.route('/countAll')
+class UsersAllCount(Resource):
     @ns.doc(security='Bearer Auth', parser=auth_header)
     @jwt_required()
     def get(self):
@@ -332,51 +332,64 @@ class UserCount(Resource):
         except Exception as e:
             return {"message": str(e)}, 500
         
-
-
-@ns.route('/dashboard/admin')
-class AdminDashboard(Resource):
+@ns.route('/count')
+class UserCount(Resource):
+    @ns.doc(security='Bearer Auth', parser=auth_header)
     @jwt_required()
     def get(self):
-        current_user = users.objects(id=get_jwt_identity()).first()
-        if not current_user or current_user.role != "admin":
-            return {"error": "Accès non autorisé"}, 403
-
         try:
-            total_users = users.objects.count()
-            #total_datasets de predictions pour users: prediction_csv_download
-            total_datasets = History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).count()
-
-            last_dataset = History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).order_by('-created_at').first()
-            #nombre de test total de prediction de users :prediction_csv_download
-            #nombre de test predction pour chque user :prediction_csv_download
-
-            problematic = History.objects(__raw__={"results.global_metrics.MAE": {"$gt": 15}})
-
-            kpis = {
-                "total_users": total_users,
-                "total_datasets": total_datasets,
-                "last_dataset": {
-                    "file": last_dataset.files[0].filename if last_dataset and last_dataset.files else None,
-                    "user_id": last_dataset.user_id if last_dataset else None,
-                    "date": last_dataset.created_at.isoformat() if last_dataset else None
-                },
-                "problematic_datasets": problematic.count()
-            }
-
-            datasets = []
-            for h in History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).order_by('-created_at'):
-                datasets.append({
-                    "user_id": h.user_id,
-                    "datasets": [f.filename for f in h.files],
-                    "date": h.created_at.isoformat(),
-                    "rows": len(h.files[0].content) if h.files else 0,
-                    "error": h.results.get("global_metrics")
-                })
-
-            return {"kpis": kpis, "datasets": datasets}, 200
+            # Compter uniquement les utilisateurs dont le rôle n'est pas admin
+            count = users.objects(role__ne="admin").count()
+            return {"total_users": count}, 200
         except Exception as e:
-            return {"error": str(e)}, 500
+            return {"message": str(e)}, 500
+
+        
+
+
+# @ns.route('/dashboard/admin')
+# class AdminDashboard(Resource):
+#     @jwt_required()
+#     def get(self):
+#         current_user = users.objects(id=get_jwt_identity()).first()
+#         if not current_user or current_user.role != "admin":
+#             return {"error": "Accès non autorisé"}, 403
+
+#         try:
+#             total_users = users.objects.count()
+#             #total_datasets de predictions pour users: prediction_csv_download
+#             total_datasets = History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).count()
+
+#             last_dataset = History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).order_by('-created_at').first()
+#             #nombre de test total de prediction de users :prediction_csv_download
+#             #nombre de test predction pour chque user :prediction_csv_download
+
+#             problematic = History.objects(__raw__={"results.global_metrics.MAE": {"$gt": 15}})
+
+#             kpis = {
+#                 "total_users": total_users,
+#                 "total_datasets": total_datasets,
+#                 "last_dataset": {
+#                     "file": last_dataset.files[0].filename if last_dataset and last_dataset.files else None,
+#                     "user_id": last_dataset.user_id if last_dataset else None,
+#                     "date": last_dataset.created_at.isoformat() if last_dataset else None
+#                 },
+#                 "problematic_datasets": problematic.count()
+#             }
+
+#             datasets = []
+#             for h in History.objects(action_type__in=["compare_csv", "prediction_csv_download"]).order_by('-created_at'):
+#                 datasets.append({
+#                     "user_id": h.user_id,
+#                     "datasets": [f.filename for f in h.files],
+#                     "date": h.created_at.isoformat(),
+#                     "rows": len(h.files[0].content) if h.files else 0,
+#                     "error": h.results.get("global_metrics")
+#                 })
+
+#             return {"kpis": kpis, "datasets": datasets}, 200
+#         except Exception as e:
+#             return {"error": str(e)}, 500
 
 
 
@@ -486,5 +499,144 @@ class UserDashboard(Resource):
             traceback.print_exc()  # Affiche la stack trace complète
             return {"error": str(e)}, 500
 
+
+
+@ns.route('/dashboard/admin')
+class AdminDashboard(Resource):
+    @jwt_required()
+    def get(self):
+        current_user = users.objects(id=get_jwt_identity()).first()
+        if not current_user or current_user.role != "admin":
+            return {"error": "Accès non autorisé"}, 403
+
+        try:
+            # --- KPIs Généraux ---
+            total_users = users.objects(role__ne="admin").count()
+            total_users_admins = users.objects.count()
+            total_datasets = History.objects(action_type__in=["prediction_csv_download"]).count()
+            total_predictions = History.objects(action_type="prediction_csv_download").count()
+
+            # Si History.user_id est en string
+            user_ids_non_admin = [str(u.id) for u in users.objects(role__ne="admin")]
+
+            total_logins = History.objects(
+                action_type="login",
+                user_id__in=user_ids_non_admin
+            ).count()
+
+
+            last_dataset = History.objects(action_type__in=["prediction_csv_download"]).order_by('-created_at').first()
+
+            # Utilisateurs les plus actifs (si tu veux aussi exclure admins ici 👇)
+            active_users = (
+                History.objects(
+                    action_type__in=["prediction_csv_download"],
+                    user_id__in=user_ids_non_admin  # ✅ exclure admins ici aussi si besoin
+                ).item_frequencies("user_id")
+            )
+            top_users = sorted(active_users.items(), key=lambda x: x[1], reverse=True)[:5]
+
+            # --- Construction des KPIs ---
+            kpis = {
+                "total_users": total_users,
+                "total_datasets": total_datasets,
+                "total_predictions": total_predictions,
+                "total_logins": total_logins,
+                "last_dataset": {
+                    "file": last_dataset.files[0].filename if last_dataset and last_dataset.files else None,
+                    "user_id": str(last_dataset.user_id) if last_dataset else None,
+                    "date": last_dataset.created_at.isoformat() if last_dataset else None
+                },
+                "top_active_users": [
+                    {"user_id": str(uid), "count": count}
+                    for uid, count in top_users
+                ]
+            }
+
+            # --- Liste des datasets pour affichage tableau ---
+            datasets = []
+            for h in History.objects(action_type__in=["prediction_csv_download"]).order_by('-created_at')[:50]:
+                datasets.append({
+                    "user_id": str(h.user_id),
+                    "datasets": [f.filename for f in h.files],
+                    "date": h.created_at.isoformat(),
+                    "rows": len(h.files[0].content) if h.files else 0,
+                    "action_type": h.action_type
+                })
+
+            # --- Statistiques par date ---
+            from collections import Counter
+            all_dates = [
+                h.created_at.date().isoformat()
+                for h in History.objects(action_type__in=["prediction_csv_download"])
+            ]
+            from datetime import datetime
+            date_counts = Counter(all_dates)
+            timeline = [{"date": d, "count": c} for d, c in sorted(date_counts.items())]
+
+            return {
+                "kpis": kpis,
+                "datasets": datasets,
+                "timeline": timeline
+            }, 200
+
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+@ns.route('/dashboard/admin/users/history')
+class AdminUsersHistory(Resource):
+    @jwt_required()
+    def get(self):
+        current_user = users.objects(id=get_jwt_identity()).first()
+        if not current_user or current_user.role != "admin":
+            return {"error": "Accès non autorisé"}, 403
+
+        try:
+            response = []
+
+            # Récupération de tous les users NON-admin
+            all_users = users.objects(role__ne="admin")  # <-- filtre sur les rôles non-admin
+
+            for u in all_users:
+                # Compter le nombre de prédictions par user
+                total_predictions = History.objects(
+                    user_id=str(u.id),
+                    action_type="prediction_csv_download"
+                ).count()
+
+                # Compter le nombre de logins par user
+                total_logins = History.objects(
+                    user_id=str(u.id),
+                    action_type="login"
+                ).count()
+
+                # Récupérer les actions de ce user (limitées aux 20 dernières)
+                user_logs = History.objects(
+                    user_id=str(u.id)
+                ).order_by('-created_at')[:20]
+
+                logs_list = []
+                for log in user_logs:
+                    logs_list.append({
+                        "action_type": log.action_type,
+                        "description": log.description,
+                        "date": log.created_at.isoformat(),
+                        "files": [f.filename for f in log.files] if log.files else [],
+                        "metrics": log.results.get("global_metrics", {})
+                    })
+
+                response.append({
+                    "user_id": str(u.id),
+                    "email": u.email,
+                    "name": u.name,  # <-- Ajout du nom
+                    "total_predictions": total_predictions,
+                    "total_logins": total_logins,
+                    "history": logs_list
+                })
+
+            return {"users_history": response}, 200
+
+        except Exception as e:
+            return {"error": str(e)}, 500
 
 

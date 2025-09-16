@@ -46,15 +46,6 @@ import HomeAdmin from "./pages/Dashboard/HomeAdmin";
 import { PredictionCsvProvider } from "./context/PredictionCsvContext";
 import HistoryAll from "./pages/history/HistoryAll";
 
-
-
-// Pages Admin (nouvelles)
-/*
-import AdminDashboard from "./pages/Admin/AdminDashboard";
-import UserManagement from "./pages/Admin/UserManagement";
-import CourseManagement from "./pages/Admin/CourseManagement";
-import EmailManagement from "./pages/Admin/EmailManagement";
-*/
 export default function App() {
   return (
     <AuthProvider>
@@ -105,6 +96,8 @@ export default function App() {
           >
             {/* Dashboard principal */}
             <Route index path="/" element={<Home />} />
+
+
             
             {/* Pages générales (utilisateurs et admins) */}
             <Route path="/profile" element={<UserProfiles />} />

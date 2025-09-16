@@ -1,0 +1,58 @@
+
+// {/* History Table */}
+//         <div className="col-span-12">
+//           {data && (
+//             <div className="rounded-2xl bg-white shadow-md p-6">
+//               <HistoryAdminUsers history={data.history} />
+//             </div>
+//           )}
+//         </div>
+
+
+
+
+
+    // {/* Tests per Month */}
+    //     <div className="col-span-12 xl:col-span-12">
+    //       {data && (
+    //         <div className="rounded-2xl bg-white shadow-md p-6">
+    //           <TestsPerMonthChart testsPerMonth={data.tests_per_month} />
+    //         </div>
+    //       )}
+    //     </div>
+
+    //     {/* Mean Prediction Over Time */}
+    //     <div className="col-span-12 xl:col-span-6">
+    //       {data && (
+    //         <div className="rounded-2xl bg-white shadow-md p-6">
+    //           <MeanPredictionChart history={data.history} />
+    //         </div>
+    //       )}
+    //     </div>
+
+    //     {/* Prediction Range per File */}
+    //     <div className="col-span-12 xl:col-span-6">
+    //       {data && (
+    //         <div className="rounded-2xl bg-white shadow-md p-6">
+    //           <PredictionRangeChart history={data.history} />
+    //         </div>
+    //       )}
+    //     </div>
+
+    //     {/* Rows per File */}
+    //     <div className="col-span-12 xl:col-span-6">
+    //       {data && (
+    //         <div className="rounded-2xl bg-white shadow-md p-6">
+    //           <RowsPerFileChart history={data.history} />
+    //         </div>
+    //       )}
+    //     </div>
+
+    //     {/* Dataset Usage */}
+    //     <div className="col-span-12 xl:col-span-6">
+    //       {data && (
+    //         <div className="rounded-2xl bg-white shadow-md p-6">
+    //           <DatasetUsageChart history={data.history} />
+    //         </div>
+    //       )}
+    //     </div>
